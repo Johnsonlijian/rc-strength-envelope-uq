@@ -40,3 +40,6 @@ panel_review*
 *.log
 *.out
 *.synctex.gz
+
+# Locally generated reproduction outputs.
+outputs/

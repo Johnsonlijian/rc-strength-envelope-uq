@@ -73,6 +73,8 @@ python a27_column_fig.py
 python generate_SI_tex.py
 ```
 
+`generate_SI_tex.py` writes a local reproduction artifact under `outputs/`; that directory is ignored by Git and is not part of the archived public release.
+
 ## Expected Public Outputs
 
 - `figures/fig1_envelope_cliff.*`
