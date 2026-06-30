@@ -1,0 +1,9 @@
+model,uq,interp,extrap
+GP,native90,0.903,0.781
+HistGB,knn-norm,0.907,0.307
+HistGB,split,0.908,0.333
+Linear,knn-norm,0.918,0.315
+Linear,split,0.889,0.399
+QuantGBM,native90,0.792,0.33
+RF,knn-norm,0.905,0.262
+RF,split,0.905,0.31

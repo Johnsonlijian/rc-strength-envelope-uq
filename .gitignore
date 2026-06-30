@@ -1,0 +1,42 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Local/private configuration
+.env
+*.env
+*.key
+*.pem
+*.token
+secrets.*
+
+# Raw third-party data and archives are intentionally excluded.
+data/raw/
+data/raw_columns/
+data/**/raw/
+*.zip
+*.xlsx
+*.xls
+
+# Submission/private working material is intentionally excluded.
+manuscript/
+submission_clean/
+rounds/
+logs/
+panel_review*
+*_draft*
+*_private*
+
+# LaTeX/build intermediates
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz

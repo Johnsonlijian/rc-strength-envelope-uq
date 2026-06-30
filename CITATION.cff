@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this reproducibility package, please cite it and the associated manuscript."
+title: "RC Strength Envelope UQ: reproducibility package"
+version: "1.0.0"
+date-released: "2026-06-30"
+authors:
+  - family-names: "REN"
+    given-names: "Lijian"
+    email: "renlijian@imut.edu.cn"
+    orcid: "https://orcid.org/0000-0003-1629-4368"
+repository-code: "https://github.com/Johnsonlijian/rc-strength-envelope-uq"
+keywords:
+  - reinforced concrete
+  - machine learning
+  - uncertainty quantification
+  - conformal prediction
+  - structural reliability
+  - size effect
+license: "MIT"
+preferred-citation:
+  type: article
+  title: "Machine-learned reinforced-concrete strength predictions fail beyond the training envelope: size and axial-load hazards with a mechanical fallback"
+  authors:
+    - family-names: "REN"
+      given-names: "Lijian"
+      email: "renlijian@imut.edu.cn"
+      orcid: "https://orcid.org/0000-0003-1629-4368"
+  year: 2026
+  notes: "Manuscript under review; article DOI to be added after publication."
