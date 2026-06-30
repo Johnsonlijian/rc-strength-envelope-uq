@@ -15,6 +15,7 @@ Date: 2026-06-30
 - Raw third-party datasets, downloaded archives, PDFs, spreadsheets, and per-specimen text files.
 - Cleaned row-level third-party datasets that may reproduce substantial parts of the original records.
 - Locally generated `outputs/` files, including generated SI source, because they are reproduction artifacts rather than public-release source files.
+- Superseded reliability scripts and the legacy `reliability_across_size.csv`; the final manuscript route uses `code/a21_steel_reliability.py`, `code/a21_fig.py`, and `data/processed/steel_reliability.csv`.
 - Internal panel-review reports, prompt/model usage logs, reviewer simulations, and private project logs.
 - Build intermediates, cache files, `__pycache__`, LaTeX logs, and QA screenshots.
 
