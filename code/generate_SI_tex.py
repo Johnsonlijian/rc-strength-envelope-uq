@@ -19,7 +19,7 @@ def table(df,cap,lab,**kw):
 L=[r"""\documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}\usepackage{booktabs,array,amsmath}
 \title{Supplementary Information\\\large Machine-learned strength predictions for reinforced-concrete members are unreliable beyond their training envelope}
-\author{Lijian REN\\School of Civil Engineering, Inner Mongolia University of Technology\\Inner Mongolia Autonomous Region Key Laboratory of Green Construction and\\Intelligent Operation and Maintenance of Civil Engineering\\College of Civil and Transportation Engineering, Hohai University\\\texttt{renlijian@imut.edu.cn}\\\texttt{https://orcid.org/0000-0003-1629-4368}}\date{}
+\author{Lijian REN\\School of Civil Engineering, Inner Mongolia University of Technology,\\Hohhot 010051, China\\Inner Mongolia Autonomous Region Key Laboratory of Green Construction and\\Intelligent Operation and Maintenance of Civil Engineering,\\Hohhot 010051, China\\College of Civil and Transportation Engineering, Hohai University,\\Nanjing 210098, China\\\texttt{renlijian@imut.edu.cn}\\\texttt{https://orcid.org/0000-0003-1629-4368}}\date{}
 \begin{document}\maketitle
 \noindent All tables are emitted directly from the analysis outputs by \texttt{code/generate\_SI\_tex.py}; every manuscript number is reproduced by the listed scripts on the listed real databases.
 Tables S1--S8 cover: (S1) database provenance, (S2) mechanical-model validation, (S3) steel slender-beam UQ matrix, (S3b) FRP and deep-beam UQ matrix, (S4) GPU deep-UQ results, (S5) size-effect exponents, (S6) reliability across size, (S7) column dual-axis extrapolation, (S8) column mechanical model by axial-load bin.
