@@ -58,9 +58,11 @@ def main():
                                  interp=coverage(pool.V_test_kN.values[ind]-vind, q),
                                  extrap=coverage(test.V_test_kN.values-vte, q)))
     r = pd.DataFrame(rows)
+    r.to_csv(PROC / "sfrc_uq_matrix.csv", index=False)
     print(r.groupby("model").agg(interp=("interp","mean"), extrap=("extrap","mean")).round(3).to_string())
     print(f"\noverall interp={r.interp.mean():.3f} extrap={r.extrap.mean():.3f} -> "
           f"{'REPLICATES collapse' if r.extrap.mean()<0.7 and r.interp.mean()>0.8 else 'no'}")
+    print("saved -> sfrc_uq_matrix.csv")
 
 
 if __name__ == "__main__":

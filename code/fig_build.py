@@ -89,7 +89,7 @@ def fig1():
     ax=fig.add_subplot(gs[0,1])
     ax.scatter(vpool,pool.V_test_kN,s=10,c=C_IN,alpha=0.6,label="in-envelope",edgecolors="none")
     ax.errorbar(vbig,big.V_test_kN,xerr=q,fmt="o",ms=4,c=C_OUT,alpha=0.8,elinewidth=0.6,
-                capsize=0,label="out-of-envelope (±$\\hat q$)")
+                capsize=0,label=r"out-of-envelope ($\pm\hat q$)")
     lim=[0,max(df.V_test_kN.max(),vbig.max())*1.05]
     ax.plot(lim,lim,"k--",lw=0.8); ax.set_xlim(lim); ax.set_ylim(lim)
     ax.set_xlabel("ML predicted $V$ (kN)"); ax.set_ylabel("measured $V_{\\rm test}$ (kN)")

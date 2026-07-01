@@ -34,9 +34,16 @@ def main():
     print(f"   -> vs ML there: ~48% unsafe. Mechanical model {'STAYS SAFER' if np.mean(Mh<1)<0.30 else 'also struggles'}.")
     # by axial-load bin
     print("\n  mechanical model uncertainty by axial-load bin:")
+    rows = []
     for lo,hival in [(0,0.15),(0.15,0.3),(0.3,0.5),(0.5,1.0)]:
         m=(d.n_ax>=lo)&(d.n_ax<hival); Mm=d.V_test_kN.values[m]/d.Vp.values[m]
-        if m.sum()>3: print(f"    n[{lo},{hival}) n={m.sum():3d}: mean={Mm.mean():.2f} COV={Mm.std()/Mm.mean():.2f} %unsafe={100*np.mean(Mm<1):.0f}%")
+        if m.sum()>3:
+            mean_m=float(Mm.mean()); cov_m=float(Mm.std()/Mm.mean()); unsafe=float(100*np.mean(Mm<1))
+            print(f"    n[{lo},{hival}) n={m.sum():3d}: mean={mean_m:.2f} COV={cov_m:.2f} %unsafe={unsafe:.0f}%")
+            rows.append({"axial_load_ratio_bin": f"{lo}--{hival}", "N": int(m.sum()),
+                         "mean_M": mean_m, "COV": cov_m, "pct_unsafe": unsafe})
     d.to_csv(PROC/"column_with_mech.csv",index=False); print("\nsaved -> column_with_mech.csv")
+    pd.DataFrame(rows).to_csv(PROC/"column_mech_by_axial_bin.csv", index=False)
+    print("saved -> column_mech_by_axial_bin.csv")
 
 if __name__=="__main__": main()

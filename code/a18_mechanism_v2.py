@@ -55,7 +55,7 @@ def main():
     by=[np.median(Rd[idx==i]) for i in range(1,len(bins)) if (idx==i).sum()>5]
     by=np.array(by)/np.interp(np.log(dref),np.log(bx),np.log(np.array(by)),)*0+np.array(by)
     by=np.array(by)/np.exp(np.interp(np.log(dref),np.log(bx),np.log(np.array(by))))
-    ax.plot(bx,by,"s",c="k",ms=6,label="real steel tests (n=1177)",zorder=6)
+    ax.plot(bx,by,"s",c="k",ms=6,label="steel binned medians (n=1177)",zorder=6)
     # mechanical models
     cmap={"MCFT":"#1b7837","CSCT":"#5aae61","fib-MC2010":"#a6dba0","Bazant-Kim":"#762a83","ACI318-19":"#9970ab"}
     for n in cmap:

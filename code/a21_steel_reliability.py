@@ -39,19 +39,27 @@ def util_for_betaT(R_cov):
 
 def main():
     df=pd.read_csv(PROC/"steel_zhang_clean.csv"); df=df[df.a_d>=2.5].dropna(subset=F+["Vu_kN"]).reset_index(drop=True)
-    d_hi=df.d.quantile(0.33); pool=df[df.d<d_hi]
+    d_hi=df.d.quantile(0.75)
+    pool_idx=np.where(df.d.values<d_hi)[0]
+    rng=np.random.default_rng(0)
+    rng.shuffle(pool_idx)
+    cut=int(0.70*len(pool_idx))
+    tr_idx, cal_idx = pool_idx[:cut], pool_idx[cut:]
     ml=HistGradientBoostingRegressor(max_iter=300,learning_rate=0.05,max_leaf_nodes=8,min_samples_leaf=15,random_state=0)
-    ml.fit(pool[F].values, np.log(pool.Vu_kN.values))
-    sm=np.mean(np.exp(np.log(pool.Vu_kN.values)-ml.predict(pool[F].values)))
+    ml.fit(df.loc[tr_idx,F].values, np.log(df.loc[tr_idx,"Vu_kN"].values))
+    sm=np.mean(np.exp(np.log(df.loc[cal_idx,"Vu_kN"].values)-ml.predict(df.loc[cal_idx,F].values)))
     df["Vml"]=np.exp(ml.predict(df[F].values))*sm
     df["Vmcft"]=[mcft(r.bw,r.d,r.a_d,r.rho,r.fc)/1e3 for r in df.itertuples()]
-    # in-envelope ML calibration
-    inb=df.d<d_hi; M_in=df.Vu_kN[inb]/df.Vml[inb]; cov_cv=M_in.std()/M_in.mean()
-    util_ml=util_for_betaT(cov_cv)         # design utilisation (engineer uses in-env COV)
-    M_me_in=df.Vu_kN[inb]/df.Vmcft[inb]; util_me=util_for_betaT(M_me_in.std()/M_me_in.mean())
+    # Held-out in-envelope calibration: no model-error COV is estimated on fitted points.
+    M_cal=df.loc[cal_idx,"Vu_kN"]/df.loc[cal_idx,"Vml"]
+    cov_cal=M_cal.std()/M_cal.mean()
+    util_ml=util_for_betaT(cov_cal)         # engineer uses held-out in-envelope COV
+    M_me_cal=df.loc[cal_idx,"Vu_kN"]/df.loc[cal_idx,"Vmcft"]
+    cov_me_cal=M_me_cal.std()/M_me_cal.mean()
+    util_me=util_for_betaT(cov_me_cal)
 
     bins=[(0,150),(150,250),(250,400),(400,650),(650,2000)]
-    print(f"in-env ML COV={cov_cv:.2f} -> design util={util_ml:.2f}; target beta_T={BETA_T}")
+    print(f"held-out in-env ML COV={cov_cal:.2f} -> design util={util_ml:.2f}; target beta_T={BETA_T}")
     print("size bin    | ML  bias COV  realised-beta | MCFT bias COV  realised-beta")
     rows=[]
     for lo,hi in bins:
@@ -61,7 +69,14 @@ def main():
         b_ml=mc_beta(Mml.mean(), Mml.std()/Mml.mean(), util_ml)     # realised: true bin M, design util
         b_me=mc_beta(Mme.mean(), Mme.std()/Mme.mean(), util_me)
         rows.append(dict(d_mid=(lo+hi)/2 if hi<2000 else 900, beta_ml=b_ml, beta_me=b_me,
-                         cov_ml=Mml.std()/Mml.mean(), bias_ml=Mml.mean(), n=int(m.sum())))
+                         cov_ml=Mml.std()/Mml.mean(), bias_ml=Mml.mean(),
+                         cov_me=Mme.std()/Mme.mean(), bias_me=Mme.mean(),
+                         n=int(m.sum()), split_seed=0, train_n=len(tr_idx), cal_n=len(cal_idx),
+                         d_threshold_quantile=0.75, d_threshold_mm=float(d_hi),
+                         calibration_cov_ml=float(cov_cal),
+                         calibration_cov_mech=float(cov_me_cal),
+                         util_ml=float(util_ml), util_mech=float(util_me),
+                         calibration_protocol="train 70% / calibrate 30% within d<75th percentile"))
         print(f"  {lo:4d}-{hi:4d} | ML {Mml.mean():.2f} {Mml.std()/Mml.mean():.2f}  beta={b_ml:.2f} | MCFT {Mme.mean():.2f} {Mme.std()/Mme.mean():.2f}  beta={b_me:.2f}")
     pd.DataFrame(rows).to_csv(PROC/"steel_reliability.csv", index=False)
     print("saved -> steel_reliability.csv")

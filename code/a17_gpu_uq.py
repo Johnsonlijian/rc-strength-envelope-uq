@@ -72,23 +72,27 @@ def main():
     df = pd.read_csv(PROC/"steel_zhang_clean.csv")
     df = df[df.a_d>=2.5].dropna(subset=FEATS+["Vu_kN"]).sort_values("d").reset_index(drop=True)
     print(f"== GPU deep-UQ on steel benchmark (n={len(df)}, device={dev}, {torch.cuda.get_device_name(0) if dev=='cuda' else ''}) ==")
-    mu, sd = df[FEATS].values.mean(0), df[FEATS].values.std(0)+1e-9
-    rng=np.random.default_rng(0); n=len(df)
     rows=[]
     for thr in [0.70,0.75,0.80]:
         d_hi=df.d.quantile(thr); pool=np.where(df.d.values<d_hi)[0]; ext=np.where(df.d.values>=d_hi)[0]
+        rng=np.random.default_rng(0)
         rng.shuffle(pool); cut=int(0.8*len(pool)); tr, ind = pool[:cut], pool[cut:]
+        # Standardisation is part of the learned model and must not see the
+        # held-out in-envelope or out-of-envelope specimens.
+        mu, sd = df[FEATS].values[tr].mean(0), df[FEATS].values[tr].std(0)+1e-9
         yext=np.log(df.Vu_kN.values[ext]); yind=np.log(df.Vu_kN.values[ind])
         for name, fn in [("DeepEnsemble", deep_ensemble), ("MC-Dropout", mc_dropout)]:
             m_in,s_in = fn(df, tr, ind, mu, sd); m_ex,s_ex = fn(df, tr, ext, mu, sd)
             z=norm.ppf(0.95)
             ci=cov90(yind, m_in-z*s_in, m_in+z*s_in); ce=cov90(yext, m_ex-z*s_ex, m_ex+z*s_ex)
-            rows.append(dict(thr=thr, method=name, interp=ci, extrap=ce))
+            rows.append(dict(thr=thr, split_seed=0, train_n=len(tr), interp_n=len(ind),
+                             extrap_n=len(ext), method=name, interp=ci, extrap=ce))
     R=pd.DataFrame(rows)
     g=R.groupby("method").agg(interp=("interp","mean"), extrap=("extrap","mean")).round(3)
     print("\n90% predictive-interval coverage (target 0.90):")
     print(g.to_string())
     print(f"\nbest deep-UQ extrapolation coverage = {R.extrap.max():.3f}  -> deep UQ also fails out of envelope")
+    R.to_csv(PROC/"steel_gpu_uq_raw.csv", index=False)
     g.to_csv(PROC/"steel_gpu_uq.csv")
 
 

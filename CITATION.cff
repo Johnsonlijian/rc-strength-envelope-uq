@@ -19,11 +19,11 @@ keywords:
 license: "MIT"
 preferred-citation:
   type: article
-  title: "Machine-learned reinforced-concrete strength predictions fail beyond the training envelope: size and axial-load hazards with a mechanical fallback"
+  title: "Machine-learned reinforced-concrete strength predictions fail beyond the training envelope: size-extrapolation hazards and a bounded mechanical fallback"
   authors:
     - family-names: "REN"
       given-names: "Lijian"
       email: "renlijian@imut.edu.cn"
       orcid: "https://orcid.org/0000-0003-1629-4368"
   year: 2026
-  notes: "Manuscript under review; article DOI to be added after publication."
+  notes: "Manuscript under review; article DOI pending publication."

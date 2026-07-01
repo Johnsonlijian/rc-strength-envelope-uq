@@ -2,7 +2,7 @@
 
 Code, derived result tables, and publication figures for the manuscript:
 
-**Machine-learned reinforced-concrete strength predictions fail beyond the training envelope: size and axial-load hazards with a mechanical fallback**
+**Machine-learned reinforced-concrete strength predictions fail beyond the training envelope: size-extrapolation hazards and a bounded mechanical fallback**
 
 Author: Lijian REN  
 ORCID: https://orcid.org/0000-0003-1629-4368  
@@ -13,7 +13,7 @@ This repository is the public reproducibility package for the submission-stage m
 ## What Is Included
 
 - `code/`: analysis, reliability, finite-element, and figure-generation scripts.
-- `data/processed/`: derived aggregate result tables and model-output summaries used by the figures and SI.
+- `data/processed/`: derived aggregate result tables and model-output summaries used by the figures and SI. Row-level third-party tables are excluded unless redistribution is clearly permitted.
 - `figures/`: final manuscript figures in editable `SVG`, vector `PDF`, and high-resolution `PNG`.
 - `DATASETS_AND_LINKS.csv`: source registry for the third-party datasets.
 - `REPRODUCIBLE_RUNBOOK.md`: environment, data acquisition, and run order.
@@ -33,7 +33,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-The included derived tables are sufficient to inspect final aggregate results and audit the archived figures. Full figure regeneration requires restoring the third-party raw data and regenerating the cleaned row-level working tables locally.
+The included derived tables are sufficient to inspect final aggregate results and audit the archived figures. Full regeneration of row-level scatter panels, including the column Fig. 8 scatter, requires restoring the third-party raw data and regenerating the cleaned row-level working tables locally. Public aggregate fallbacks are provided where row-level redistribution is not appropriate.
 
 ```bash
 cd code
@@ -50,7 +50,7 @@ python a21_fig.py
 python a27_column_fig.py
 ```
 
-Those raw and cleaned row-level files are intentionally absent from this repository.
+Those raw and cleaned row-level files are intentionally absent from this repository. The public `column_mech_by_axial_bin.csv` aggregate reproduces the SI column-mechanical summary without redistributing the row-level column records.
 
 ## Public Release Boundary
 
