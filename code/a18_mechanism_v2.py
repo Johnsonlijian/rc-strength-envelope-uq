@@ -1,7 +1,7 @@
 """
 a18_mechanism_v2.py — definitive mechanism figure on the CANONICAL steel benchmark.
-Real steel tests (Zhang 1704, m=-0.41) + first-principles FE (m=-0.23, robust over
-384 parametric runs) + 5 field-standard mechanical models (-0.30..-0.38) all agree;
+Real steel tests (Zhang 1704, m=-0.41) + mechanics-based FE (m=-0.23, robust over
+384 parametric runs) + 5 field-standard mechanical models (-0.30..-0.38) share the same order;
 ML extrapolation (m=-1.0, the flat-extrapolation 1/d artefact) is the outlier.
 """
 from __future__ import annotations
@@ -21,10 +21,11 @@ plt.rcParams.update({
   "legend.fontsize":6.6,"savefig.dpi":450,"savefig.bbox":"tight"})
 
 
-def save_all(fig, stem: str):
-    fig.savefig(FIG/f"{stem}.svg")
-    fig.savefig(FIG/f"{stem}.pdf")
-    fig.savefig(FIG/f"{stem}.png")
+def save_all(fig, stem: str, aliases=()):
+    for name in (stem, *aliases):
+        fig.savefig(FIG/f"{name}.svg")
+        fig.savefig(FIG/f"{name}.pdf")
+        fig.savefig(FIG/f"{name}.png")
 
 
 def steel_size_effect():
@@ -86,7 +87,7 @@ def main():
     ax.set_xlabel("large-size exponent $m$"); ax.set_title("ML is the outlier",fontsize=8.2)
     ax.text(-0.30,1.02,"B",transform=ax.transAxes,fontweight="bold",fontsize=11)
 
-    save_all(fig, "fig6_mechanism_convergence"); plt.close(fig)
+    save_all(fig, "fig3_mechanism_convergence", aliases=("fig6_mechanism_convergence",)); plt.close(fig)
     print(f"fig6 v2 done. real steel m={m_steel:.2f}; FE {fe['large_slope']:.2f}±{par['slope_sd']:.2f}")
 
 

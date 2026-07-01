@@ -72,9 +72,10 @@ else:
 ax.text(-0.2,1.02,"B",transform=ax.transAxes,fontweight="bold",fontsize=11)
 
 fig.tight_layout()
-fig.savefig(FIG/"fig8_columns.svg")
-fig.savefig(FIG/"fig8_columns.pdf")
-fig.savefig(FIG/"fig8_columns.png")
+for stem in ("fig7_columns", "fig8_columns"):
+    fig.savefig(FIG/f"{stem}.svg")
+    fig.savefig(FIG/f"{stem}.pdf")
+    fig.savefig(FIG/f"{stem}.png")
 plt.close(fig)
-print(f"fig8 columns done. size cov {val('size','interp'):.2f}->{val('size','extrap'):.2f}; "
+print(f"fig7 columns done (legacy alias fig8_columns). size cov {val('size','interp'):.2f}->{val('size','extrap'):.2f}; "
       f"axial cov {val('axial','interp'):.2f}->{val('axial','extrap'):.2f}; high-n unsafe={unsafe:.0f}%")

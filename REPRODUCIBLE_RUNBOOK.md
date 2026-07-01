@@ -22,7 +22,7 @@ Finite-element scripts use `scikit-fem`; install it from `requirements.txt` when
 
 This repository includes derived aggregate result tables under `data/processed/`. Cleaned row-level third-party datasets are excluded because they may reproduce substantial parts of the original third-party records.
 
-For the public package, `fig_build.py` can still regenerate Figures 1--4 without the cleaned FRP row-level table. Figures 3 and 4 use `data/processed/frp_fig3_binned.csv` and `data/processed/frp_fig4_remedy_ratios.csv` as derived fallback summaries when `data/processed/frp_clean.csv` is absent.
+For the public package, `fig_build.py` can still regenerate Figures 1, 2, 5, and 6 without the cleaned FRP row-level table. Figures 5 and 6 use `data/processed/frp_fig3_binned.csv` and `data/processed/frp_fig4_remedy_ratios.csv` as derived fallback summaries when `data/processed/frp_clean.csv` is absent.
 
 ## Manuscript Output Run Order
 
@@ -83,11 +83,16 @@ The repository also retains older diagnostic scripts whose names begin with `a03
 
 - `figures/fig1_envelope_cliff.*`
 - `figures/fig2_uq_matrix.*`
-- `figures/fig3_error_vs_size.*`
-- `figures/fig4_remedy.*`
-- `figures/fig6_mechanism_convergence.*`
-- `figures/fig7_reliability_across_size.*`
-- `figures/fig8_columns.*`
+- `figures/fig3_mechanism_convergence.*`
+- `figures/fig4_reliability_across_size.*`
+- `figures/fig5_error_vs_size.*`
+- `figures/fig6_remedy.*`
+- `figures/fig7_columns.*`
+
+For backward compatibility with earlier release candidates, the figure scripts
+may also emit legacy aliases (`fig3_error_vs_size`, `fig4_remedy`,
+`fig6_mechanism_convergence`, `fig7_reliability_across_size`, and
+`fig8_columns`). The current manuscript uses the Figure 1--7 stems listed above.
 - aggregate CSV/JSON outputs under `data/processed/`
 - `data/processed/frp_fig3_binned.csv` and `data/processed/frp_fig4_remedy_ratios.csv` are public fallback summaries for the FRP size-drift and fallback-remedy figure panels.
 - `data/processed/column_mech_by_axial_bin.csv` is the public aggregate replacement for the non-redistributed row-level column mechanical table.

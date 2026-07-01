@@ -3,8 +3,8 @@ fig_build.py — publication figures (real data) for the out-of-envelope paper.
 Outputs SVG+PDF+PNG to ../figures/.
  Fig 1  integrated overview: CV cliff, mechanism, reliability, fallback rule
  Fig 2  no UQ method restores extrapolation coverage (FRP + steel)
- Fig 3  model error vs size: ML cliffs, mechanical model stays safe
- Fig 4  the remedy: applicability-domain gate + mechanical fallback
+ Fig 5  model error vs size: ML cliff, range-bounded mechanical check
+ Fig 6  the remedy: applicability-domain gate + mechanical fallback
 """
 from __future__ import annotations
 import warnings, numpy as np, pandas as pd
@@ -35,10 +35,11 @@ C_IN, C_OUT, C_MECH, C_ACC = "#2c6fbb", "#c1352c", "#2a9d5c", "#7a7a7a"
 FEATS = ["bw", "d", "fc", "rho_l", "Ef", "a_d"]
 
 
-def save_all(fig, stem: str):
-    fig.savefig(FIG/f"{stem}.svg")
-    fig.savefig(FIG/f"{stem}.pdf")
-    fig.savefig(FIG/f"{stem}.png")
+def save_all(fig, stem: str, aliases=()):
+    for name in (stem, *aliases):
+        fig.savefig(FIG/f"{name}.svg")
+        fig.savefig(FIG/f"{name}.pdf")
+        fig.savefig(FIG/f"{name}.png")
 
 
 def load_frp():
@@ -254,8 +255,8 @@ def fig3():
     ax.set_ylim(0,2.6); ax.legend(frameon=False,loc="upper right")
     ax.set_title("Model-error drift with member size",fontsize=8.5)
     fig.tight_layout()
-    save_all(fig, "fig3_error_vs_size"); plt.close(fig)
-    print("fig3 done")
+    save_all(fig, "fig5_error_vs_size", aliases=("fig3_error_vs_size",)); plt.close(fig)
+    print("fig5 done (legacy alias fig3_error_vs_size)")
 
 
 # ---------------- Figure 4 : remedy ----------------
@@ -288,8 +289,8 @@ def fig4():
     ax.set_xticks([1,2]); ax.set_xticklabels(["ML","ACI 440.1R-15"]); ax.set_ylabel("$V_{\\rm test}/V_{\\rm pred}$ (out-of-env.)")
     ax.set_title("Bounded, conservative fallback",fontsize=8.5)
     ax.text(-0.26,1.02,"B",transform=ax.transAxes,fontweight="bold",fontsize=11)
-    fig.tight_layout(); save_all(fig, "fig4_remedy"); plt.close(fig)
-    print("fig4 done", f"(ML unconservative {unc_ml:.0%}, ACI440 {unc_me:.0%})")
+    fig.tight_layout(); save_all(fig, "fig6_remedy", aliases=("fig4_remedy",)); plt.close(fig)
+    print("fig6 done (legacy alias fig4_remedy)", f"(ML unconservative {unc_ml:.0%}, ACI440 {unc_me:.0%})")
 
 
 if __name__ == "__main__":

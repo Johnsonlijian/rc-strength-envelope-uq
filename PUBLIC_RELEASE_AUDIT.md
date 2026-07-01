@@ -5,7 +5,7 @@ Date: 2026-07-01
 ## Included
 
 - Analysis and figure-generation code under `code/`.
-- Final manuscript-used figures 1, 2, 3, 4, 6, 7, and 8 in `SVG`, `PDF`, and `PNG`.
+- Final manuscript-used figures 1--7 in `SVG`, `PDF`, and `PNG`, with legacy figure-name aliases retained only for backward compatibility with earlier release candidates.
 - Derived aggregate result tables and JSON summaries under `data/processed/`.
 - Dataset source registry, runbook, citation metadata, license files, and release notes.
 

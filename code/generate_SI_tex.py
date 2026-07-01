@@ -11,7 +11,7 @@ PROC = Path("../data/processed")
 OUT = Path("../outputs")
 TITLE = (
     "Machine-learned reinforced-concrete strength intervals fail beyond the "
-    "training envelope: size-extrapolation hazards and a bounded mechanical fallback"
+    "training envelope: size-extrapolation hazards and a range-bounded mechanical fallback"
 )
 
 
@@ -166,7 +166,7 @@ L.append(
             ],
             columns=["source", "large-size exponent m"],
         ),
-        f"Large-size exponent $m$ (size effect): real data, first-principles FE (parametric mean ${par['slope_mean']:.2f}\\pm{par['slope_sd']:.2f}$ over 384 runs), field-standard mechanical theories, and the ML extrapolation artefact.",
+        f"Large-size exponent $m$ (size effect): real data, mechanics-based crack-band FE simulation (parametric mean ${par['slope_mean']:.2f}\\pm{par['slope_sd']:.2f}$ over 384 runs), field-standard mechanical theories, and the ML extrapolation artefact.",
         "tab:s6",
     )
 )

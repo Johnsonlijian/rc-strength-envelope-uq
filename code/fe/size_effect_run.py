@@ -1,5 +1,5 @@
 """Run the FE on a geometrically-similar SCALED beam series -> size effect from
-first-principles crack-band simulation. Saves v_nom(d)."""
+mechanics-based crack-band simulation. Saves v_nom(d)."""
 import numpy as np, json, time
 from damage_fe import shear_capacity_fe
 

@@ -2,7 +2,7 @@
 
 Code, derived result tables, and publication figures for the manuscript:
 
-**Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and a bounded mechanical fallback**
+**Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and a range-bounded mechanical fallback**
 
 Author: Lijian REN  
 ORCID: https://orcid.org/0000-0003-1629-4368  
@@ -33,7 +33,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-The included derived tables are sufficient to inspect final aggregate results and audit the archived figures. Full regeneration of row-level scatter panels, including the column Fig. 8 scatter, requires restoring the third-party raw data and regenerating the cleaned row-level working tables locally. Public aggregate fallbacks are provided where row-level redistribution is not appropriate.
+The included derived tables are sufficient to inspect final aggregate results and audit the archived figures. Full regeneration of row-level scatter panels, including the column Figure 7 scatter, requires restoring the third-party raw data and regenerating the cleaned row-level working tables locally. Public aggregate fallbacks are provided where row-level redistribution is not appropriate.
 
 ```bash
 cd code
