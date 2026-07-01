@@ -13,7 +13,7 @@ This repository is the public reproducibility package for the submission-stage m
 ## What Is Included
 
 - `code/`: analysis, reliability, finite-element, and figure-generation scripts.
-- `data/processed/`: derived aggregate result tables and model-output summaries used by the figures and SI. Row-level third-party tables are excluded unless redistribution is clearly permitted.
+- `data/processed/`: derived aggregate result tables and model-output summaries used by the figures and SI. Row-level third-party tables are excluded unless redistribution is clearly permitted; `frp_fig3_binned.csv` and `frp_fig4_remedy_ratios.csv` are public fallback summaries for rerunning `fig_build.py` without redistributing the cleaned FRP row-level table.
 - `figures/`: final manuscript figures in editable `SVG`, vector `PDF`, and high-resolution `PNG`.
 - `DATASETS_AND_LINKS.csv`: source registry for the third-party datasets.
 - `REPRODUCIBLE_RUNBOOK.md`: environment, data acquisition, and run order.
@@ -50,7 +50,7 @@ python a21_fig.py
 python a27_column_fig.py
 ```
 
-Those raw and cleaned row-level files are intentionally absent from this repository. The public `column_mech_by_axial_bin.csv` aggregate reproduces the SI column-mechanical summary without redistributing the row-level column records.
+Those raw and cleaned row-level files are intentionally absent from this repository. The public `frp_fig3_binned.csv`, `frp_fig4_remedy_ratios.csv`, and `column_mech_by_axial_bin.csv` aggregates reproduce the corresponding figure/SI summaries without redistributing row-level third-party records.
 
 ## Public Release Boundary
 

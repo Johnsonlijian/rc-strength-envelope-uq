@@ -22,6 +22,8 @@ Finite-element scripts use `scikit-fem`; install it from `requirements.txt` when
 
 This repository includes derived aggregate result tables under `data/processed/`. Cleaned row-level third-party datasets are excluded because they may reproduce substantial parts of the original third-party records.
 
+For the public package, `fig_build.py` can still regenerate Figures 1--4 without the cleaned FRP row-level table. Figures 3 and 4 use `data/processed/frp_fig3_binned.csv` and `data/processed/frp_fig4_remedy_ratios.csv` as derived fallback summaries when `data/processed/frp_clean.csv` is absent.
+
 ## Manuscript Output Run Order
 
 From the repository root:
@@ -87,6 +89,7 @@ The repository also retains older diagnostic scripts whose names begin with `a03
 - `figures/fig7_reliability_across_size.*`
 - `figures/fig8_columns.*`
 - aggregate CSV/JSON outputs under `data/processed/`
+- `data/processed/frp_fig3_binned.csv` and `data/processed/frp_fig4_remedy_ratios.csv` are public fallback summaries for the FRP size-drift and fallback-remedy figure panels.
 - `data/processed/column_mech_by_axial_bin.csv` is the public aggregate replacement for the non-redistributed row-level column mechanical table.
 
 ## Known Boundaries

@@ -67,42 +67,42 @@ def frp_split_fit(df, seed=0):
 
 # ---------------- Figure 1 : integrated overview ----------------
 def fig1():
-    fig=plt.figure(figsize=(7.60,5.35))
-    gs=fig.add_gridspec(2,2,wspace=0.36,hspace=0.48)
+    fig=plt.figure(figsize=(7.55,6.25))
+    gs=fig.add_gridspec(2,2,wspace=0.34,hspace=0.50)
 
     def panel_label(ax, s):
-        ax.text(-0.08,1.05,s,transform=ax.transAxes,fontweight="bold",fontsize=11,va="bottom")
+        ax.text(-0.10,1.04,s,transform=ax.transAxes,fontweight="bold",fontsize=11,va="bottom")
 
-    def box(ax, xy, wh, text, fc, ec, fontsize=7.5, weight="normal"):
-        x,y=xy; w,h=wh
-        ax.add_patch(FancyBboxPatch((x,y),w,h,boxstyle="round,pad=0.025,rounding_size=0.035",
-                                    fc=fc,ec=ec,lw=1.0,transform=ax.transAxes,clip_on=False))
-        ax.text(x+w/2,y+h/2,text,ha="center",va="center",fontsize=fontsize,
-                fontweight=weight,transform=ax.transAxes)
-
-    def arrow(ax, xy1, xy2, color="0.25", lw=1.0):
-        ax.annotate("",xy=xy2,xycoords=ax.transAxes,xytext=xy1,textcoords=ax.transAxes,
-                    arrowprops=dict(arrowstyle="->",lw=lw,color=color,shrinkA=2,shrinkB=2))
+    def clean_axes(ax):
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(length=3,width=0.8)
 
     # A: validation mismatch
     ax=fig.add_subplot(gs[0,0]); ax.axis("off"); panel_label(ax,"A")
-    ax.set_title("Validation mismatch",fontsize=9,pad=4)
-    box(ax,(0.03,0.58),(0.38,0.28),"Random CV\nexchangeable\ninterpolation", "#eef3f7", C_ACC, 7.2)
-    box(ax,(0.59,0.58),(0.38,0.28),"Engineering use\nlarge member\nextrapolation", "#fdeceb", C_OUT, 7.2)
-    arrow(ax,(0.42,0.72),(0.58,0.72),C_OUT,1.3)
-    ax.text(0.50,0.84,"not the same\nvalidity claim",ha="center",va="center",fontsize=6.7,
-            color=C_OUT,transform=ax.transAxes)
-    y=0.25
-    for x0,h,c in [(0.10,0.11,C_IN),(0.20,0.17,C_IN),(0.30,0.22,C_IN),(0.73,0.31,C_OUT)]:
-        ax.add_patch(plt.Rectangle((x0,y),0.055,h,fc=c,ec=c,alpha=0.85,transform=ax.transAxes))
-        ax.plot([x0-0.008,x0+0.063],[y+h,y+h],c=c,lw=1.0,transform=ax.transAxes)
-    ax.plot([0.04,0.96],[y,y],c="0.25",lw=0.8,transform=ax.transAxes)
-    ax.text(0.50,0.10,"effective depth $d$  $\\longrightarrow$",ha="center",fontsize=7.4,transform=ax.transAxes)
-    ax.text(0.20,0.50,"training envelope",ha="center",fontsize=7,color=C_IN,transform=ax.transAxes)
-    ax.text(0.76,0.50,"out-of-envelope",ha="center",fontsize=7,color=C_OUT,transform=ax.transAxes)
+    ax.set_xlim(0,1); ax.set_ylim(0,1)
+    ax.set_title("Validation domain mismatch",fontsize=9,pad=6)
+    ax.annotate("",xy=(0.92,0.20),xytext=(0.08,0.20),
+                arrowprops=dict(arrowstyle="->",lw=0.9,color="0.25"))
+    ax.text(0.50,0.08,"effective depth / member size $d$",ha="center",fontsize=7.4)
+    ax.add_patch(plt.Rectangle((0.12,0.31),0.43,0.15,fc=C_IN,ec=C_IN,lw=0.9,alpha=0.12))
+    ax.add_patch(plt.Rectangle((0.70,0.31),0.17,0.15,fc=C_OUT,ec=C_OUT,lw=0.9,alpha=0.14))
+    for x,h in [(0.19,0.09),(0.29,0.13),(0.39,0.18),(0.49,0.21)]:
+        ax.add_patch(plt.Rectangle((x,0.22),0.035,h,fc=C_IN,ec=C_IN,alpha=0.80))
+    ax.add_patch(plt.Rectangle((0.76,0.22),0.035,0.28,fc=C_OUT,ec=C_OUT,alpha=0.85))
+    ax.text(0.335,0.52,"trained feature envelope",ha="center",fontsize=7.1,color=C_IN)
+    ax.text(0.785,0.52,"deployment\nquery",ha="center",fontsize=7.1,color=C_OUT)
+    ax.text(0.12,0.86,"Random CV",ha="left",fontsize=8.2,fontweight="bold")
+    ax.text(0.12,0.75,"validates exchangeable\ninterpolation only",ha="left",va="top",fontsize=7.3)
+    ax.text(0.62,0.86,"Engineering use",ha="left",fontsize=8.2,fontweight="bold")
+    ax.text(0.62,0.75,"often asks beyond\nthe training envelope",ha="left",va="top",fontsize=7.3)
+    ax.annotate("",xy=(0.68,0.40),xytext=(0.56,0.40),
+                arrowprops=dict(arrowstyle="->",lw=1.0,color=C_OUT))
+    ax.text(0.62,0.49,"not certified",ha="center",va="center",fontsize=6.9,color=C_OUT)
 
     # B: quantitative cliff from saved UQ matrices
     ax=fig.add_subplot(gs[0,1]); panel_label(ax,"B")
+    clean_axes(ax)
     Rf=pd.read_csv(PROC/"a07_uq_matrix_raw.csv")
     Rs=pd.read_csv(PROC/"steel_uq_matrix_raw.csv")
     rows=[]
@@ -117,57 +117,59 @@ def fig1():
     ax.bar(centers+width/2,extrap,width,color=C_OUT,label="size extrapolation",
            yerr=extrap_sd,capsize=2,error_kw=dict(lw=0.7,capthick=0.7))
     ax.axhline(0.90,ls="--",c="k",lw=0.8)
-    ax.text(1.48,0.915,"target 0.90",fontsize=6.8,ha="right")
-    ax.set_ylim(0,1.02); ax.set_ylabel("split-conformal coverage")
+    ax.text(1.42,0.925,"target 0.90",fontsize=6.8,ha="right")
+    ax.set_ylim(0,1.04); ax.set_ylabel("split-conformal coverage")
     ax.set_xticks(centers); ax.set_xticklabels([r[0] for r in rows])
-    ax.set_title("The interval cliff",fontsize=9,pad=4)
+    ax.set_title("Interval coverage collapses out of envelope",fontsize=9,pad=6)
     for x,v in zip(centers+width/2,extrap):
-        ax.text(x,v+0.035,f"{v:.2f}",ha="center",fontsize=7,color=C_OUT)
+        ax.text(x,v+0.045,f"{v:.2f}",ha="center",fontsize=7.1,color=C_OUT)
     ax.legend(frameon=False,loc="lower center",bbox_to_anchor=(0.5,-0.24),
               ncol=2,fontsize=6.8,handlelength=1.2,columnspacing=1.2)
 
     # C: mechanism slope contrast
     ax=fig.add_subplot(gs[1,0]); panel_label(ax,"C")
+    clean_axes(ax)
     d=np.array([100,200,400,800,1400],float)
     y_phys=(d/100)**(-0.32)
     y_tree=(d/100)**(-1.00)
-    ax.plot(d,y_phys,"-o",c=C_MECH,lw=1.8,ms=4,label="mechanics $m\\approx-0.3$")
-    ax.plot(d,y_tree,"-o",c=C_OUT,lw=1.8,ms=4,label="tree artefact $m\\approx-1.0$")
+    ax.plot(d,y_phys,"-o",c=C_MECH,lw=1.7,ms=4.2)
+    ax.plot(d,y_tree,"-o",c=C_OUT,lw=1.7,ms=4.2)
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("effective depth $d$ (mm)")
     ax.set_ylabel("normalised nominal shear")
-    ax.set_title("Missing size-effect physics",fontsize=9,pad=4)
-    ax.legend(frameon=False,fontsize=7,loc="lower left")
-    ax.text(145,0.55,"fracture-energy\nsize effect",color=C_MECH,fontsize=7)
-    ax.text(520,0.045,"prediction caps\n$\\Rightarrow\\tau\\sim1/d$",color=C_OUT,fontsize=7)
-    ax.set_ylim(0.04,1.2)
+    ax.set_title("Tree extrapolation misses size-effect physics",fontsize=9,pad=6)
+    ax.text(760,0.39,"mechanics\n$m\\approx-0.3$",color=C_MECH,fontsize=7.2,
+            bbox=dict(fc="white",ec="none",alpha=0.82,pad=1.5))
+    ax.text(420,0.078,"tree artefact\n$m\\approx-1.0$",color=C_OUT,fontsize=7.2,
+            bbox=dict(fc="white",ec="none",alpha=0.82,pad=1.5))
+    ax.text(145,0.58,"fracture-energy\nsize effect",color=C_MECH,fontsize=6.8)
+    ax.text(840,0.052,"prediction caps\n$\\tau\\propto1/d$",color=C_OUT,fontsize=6.8,ha="center")
+    ax.set_xlim(80,1700); ax.set_ylim(0.04,1.25)
 
     # D: reliability consequence and rule
-    ax=fig.add_subplot(gs[1,1]); ax.axis("off"); panel_label(ax,"D")
-    ax.set_title("Reliability consequence and bounded rule",fontsize=9,pad=4)
-    inset=ax.inset_axes([0.02,0.18,0.45,0.70])
+    ax=fig.add_subplot(gs[1,1]); panel_label(ax,"D")
+    clean_axes(ax)
+    ax.set_title("Reliability drops below target",fontsize=9,pad=6)
     rel=pd.read_csv(PROC/"steel_reliability.csv")
-    inset.plot(rel.d_mid,rel.beta_ml,"o-",c=C_OUT,lw=1.4,ms=3.8,label="learned")
-    inset.plot(rel.d_mid,rel.beta_me,"s-",c=C_MECH,lw=1.4,ms=3.8,label="MCFT")
-    inset.axhline(3.8,ls="--",c="k",lw=0.8)
-    inset.text(rel.d_mid.max(),3.86,"$\\beta_T$",fontsize=6.5,ha="right",va="bottom")
-    inset.set_xlabel("$d$ bin midpoint (mm)",fontsize=7)
-    inset.set_ylabel("realised $\\beta$",fontsize=7)
-    inset.tick_params(labelsize=6.5)
-    inset.set_ylim(1.4,4.7)
-    inset.legend(frameon=False,fontsize=6.3,loc="lower left")
-    x0=0.56
-    box(ax,(x0,0.67),(0.34,0.17),"new member\n$x$", "#f7f7f7", "0.45", 7.1)
-    box(ax,(x0,0.43),(0.34,0.16),"inside trained\nfeature envelope?", "#eef3f7", C_IN, 7.0)
-    box(ax,(x0-0.08,0.16),(0.22,0.17),"yes:\nML interval\nwith caveat", "#eef3f7", C_IN, 6.6)
-    box(ax,(x0+0.21,0.16),(0.25,0.17),"no:\nvalidated\nmechanical model\nfor regime", "#eaf6ef", C_MECH, 6.2)
-    arrow(ax,(x0+0.17,0.67),(x0+0.17,0.59),"0.25",1.0)
-    arrow(ax,(x0+0.10,0.43),(x0+0.04,0.33),C_IN,1.0)
-    arrow(ax,(x0+0.24,0.43),(x0+0.35,0.33),C_MECH,1.0)
+    ax.axhspan(1.35,3.8,fc=C_OUT,alpha=0.07,zorder=0)
+    ax.plot(rel.d_mid,rel.beta_ml,"o-",c=C_OUT,lw=1.7,ms=4.2)
+    ax.plot(rel.d_mid,rel.beta_me,"s-",c=C_MECH,lw=1.7,ms=4.2)
+    ax.axhline(3.8,ls="--",c="k",lw=0.8)
+    ax.text(910,3.87,"target $\\beta_T=3.8$",fontsize=6.9,ha="right",va="bottom")
+    ax.text(565,2.03,"learned interval",color=C_OUT,fontsize=7.2,
+            bbox=dict(fc="white",ec="none",alpha=0.85,pad=1.5))
+    ax.text(560,4.42,"validated mechanics",color=C_MECH,fontsize=7.2,
+            bbox=dict(fc="white",ec="none",alpha=0.85,pad=1.5))
+    ax.annotate("$\\beta\\approx1.8$",xy=(525,1.82),xytext=(380,1.54),
+                color=C_OUT,fontsize=7.2,
+                arrowprops=dict(arrowstyle="->",lw=0.8,color=C_OUT))
+    ax.set_xlabel("$d$ bin midpoint (mm)")
+    ax.set_ylabel("realised reliability index $\\beta$")
+    ax.set_ylim(1.35,4.75); ax.set_xlim(40,940)
 
-    fig.suptitle("Cross-validation certifies interpolation; structural safety needs envelope-aware uncertainty",
-                 fontsize=9.8,y=0.995)
-    fig.subplots_adjust(top=0.91,left=0.125,right=0.98,bottom=0.095)
+    fig.suptitle("Random cross-validation is an interpolation certificate, not a deployment-safety certificate",
+                 fontsize=10.0,y=0.992)
+    fig.subplots_adjust(top=0.91,left=0.105,right=0.985,bottom=0.095)
     save_all(fig, "fig1_envelope_cliff"); plt.close(fig)
     print("fig1 done (integrated overview)")
 
@@ -215,20 +217,34 @@ def fig2():
 
 # ---------------- Figure 3 : error vs size, ML vs mechanical ----------------
 def fig3():
-    df=load_frp(); df["Vc440"]=aci440(df)
-    # ML out-of-fold within full set for a fair size-trend of CV error (interp), plus extrap fit
-    d_hi,pool,big,vpool,vbig,q=frp_split_fit(df)
-    # combine ML predictions: pool=OOF-ish (use fitted, conservative) ; big=extrapolation
-    ml_ratio=np.concatenate([pool.V_test_kN.values/vpool, big.V_test_kN.values/vbig])
-    dd=np.concatenate([pool.d.values,big.d.values])
-    mech_ratio=df.V_test_kN.values/df.Vc440.values
+    if (PROC/"frp_clean.csv").exists():
+        df=load_frp(); df["Vc440"]=aci440(df)
+        # ML out-of-fold within full set for a fair size-trend of CV error (interp), plus extrap fit
+        d_hi,pool,big,vpool,vbig,q=frp_split_fit(df)
+        ml_ratio=np.concatenate([pool.V_test_kN.values/vpool, big.V_test_kN.values/vbig])
+        dd=np.concatenate([pool.d.values,big.d.values])
+        mech_ratio=df.V_test_kN.values/df.Vc440.values
+        bins=[0,150,225,300,400,550,1000]
+        rows=[]
+        for lo,hi in zip(bins[:-1],bins[1:]):
+            mml=(dd>=lo)&(dd<hi); mme=(df.d.values>=lo)&(df.d.values<hi)
+            rows.append({
+                "x_mid": (lo+hi)/2,
+                "ml_ratio_mean": ml_ratio[mml].mean() if mml.sum()>2 else np.nan,
+                "mech_ratio_mean": mech_ratio[mme].mean() if mme.sum()>2 else np.nan,
+            })
+        agg=pd.DataFrame(rows)
+    else:
+        agg_path=PROC/"frp_fig3_binned.csv"
+        if not agg_path.exists():
+            raise FileNotFoundError(f"Missing {agg_path}; run a01_frp_load_eda.py on licensed data or use the public aggregate table.")
+        agg=pd.read_csv(agg_path)
+        d_hi=float(agg["d_hi"].dropna().iloc[0])
     fig,ax=plt.subplots(figsize=(4.25,3.0))
-    # binned means
-    bins=[0,150,225,300,400,550,1000]; cb=[]
-    for lo,hi in zip(bins[:-1],bins[1:]):
-        mml=(dd>=lo)&(dd<hi); mme=(df.d.values>=lo)&(df.d.values<hi); xc=(lo+hi)/2
-        if mml.sum()>2: ax.plot(xc,ml_ratio[mml].mean(),"o",c=C_OUT,ms=5)
-        if mme.sum()>2: ax.plot(xc,mech_ratio[mme].mean(),"s",c=C_MECH,ms=5)
+    for _,row in agg.iterrows():
+        xc=row["x_mid"]
+        if pd.notna(row["ml_ratio_mean"]): ax.plot(xc,row["ml_ratio_mean"],"o",c=C_OUT,ms=5)
+        if pd.notna(row["mech_ratio_mean"]): ax.plot(xc,row["mech_ratio_mean"],"s",c=C_MECH,ms=5)
     ax.axvspan(d_hi,1000,color="#fdeceb",alpha=0.5,zorder=0)
     ax.text(d_hi+10,0.3,"out-of-envelope",color=C_OUT,fontsize=7,rotation=90,va="bottom")
     ax.axhline(1.0,ls=":",c="k",lw=0.8); ax.text(60,1.03,"unsafe if below 1",fontsize=6.5,color="k")
@@ -244,10 +260,20 @@ def fig3():
 
 # ---------------- Figure 4 : remedy ----------------
 def fig4():
-    df=load_frp(); df["Vc440"]=aci440(df); d_hi,pool,big,vpool,vbig,q=frp_split_fit(df)
-    # % unconservative out-of-envelope: ML(RF) vs ACI440 ; and COV
-    unc_ml=np.mean(big.V_test_kN.values<vbig); cov_ml=big.V_test_kN.values/vbig
-    unc_me=np.mean(big.V_test_kN.values<big.Vc440.values); cov_me=big.V_test_kN.values/big.Vc440.values
+    if (PROC/"frp_clean.csv").exists():
+        df=load_frp(); df["Vc440"]=aci440(df); d_hi,pool,big,vpool,vbig,q=frp_split_fit(df)
+        # % unconservative out-of-envelope: ML(RF) vs ACI440 ; and COV
+        cov_ml=big.V_test_kN.values/vbig
+        cov_me=big.V_test_kN.values/big.Vc440.values
+    else:
+        ratios_path=PROC/"frp_fig4_remedy_ratios.csv"
+        if not ratios_path.exists():
+            raise FileNotFoundError(f"Missing {ratios_path}; run a01_frp_load_eda.py on licensed data or use the public derived ratio table.")
+        ratios=pd.read_csv(ratios_path)
+        cov_ml=ratios.loc[ratios.method=="ML","v_test_over_v_pred"].to_numpy()
+        cov_me=ratios.loc[ratios.method=="ACI440","v_test_over_v_pred"].to_numpy()
+    unc_ml=np.mean(cov_ml<1.0)
+    unc_me=np.mean(cov_me<1.0)
     fig,axes=plt.subplots(1,2,figsize=(6.4,2.6))
     ax=axes[0]
     ax.bar([0,1],[unc_ml*100,unc_me*100],color=[C_OUT,C_MECH],width=0.6)
