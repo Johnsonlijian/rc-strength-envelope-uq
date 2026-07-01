@@ -1,0 +1,5 @@
+model,subset,n,mean_M,COV,unsafe_fraction,source
+Learned tree model,OOE steel d>=276 mm,303,1.845,0.519,0.129,a16_steel_extrapolation.py spot-check summary
+MCFT,OOE steel d>=276 mm,303,,0.155,,a16_steel_extrapolation.py spot-check summary
+CSCT,OOE steel d>=276 mm,303,,0.151,,a16_steel_extrapolation.py spot-check summary
+fib-MC2010,OOE steel d>=276 mm,303,,0.156,,a16_steel_extrapolation.py spot-check summary

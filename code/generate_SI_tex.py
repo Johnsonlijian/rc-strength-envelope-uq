@@ -108,6 +108,24 @@ L.append(
     )
 )
 
+ooe_summary_path = PROC / "steel_ooe_model_uncertainty_summary.csv"
+if ooe_summary_path.exists():
+    ooe_summary = pd.read_csv(ooe_summary_path)
+    ooe_summary = ooe_summary[["model", "subset", "n", "mean_M", "COV", "unsafe_fraction"]].rename(
+        columns={"mean_M": "mean M", "unsafe_fraction": "unsafe fraction"}
+    )
+    for col in ["mean M", "COV", "unsafe fraction"]:
+        ooe_summary[col] = ooe_summary[col].map(lambda v: "--" if pd.isna(v) else f"{float(v):.3f}")
+    L.append(
+        table(
+            ooe_summary,
+            "Out-of-envelope model-uncertainty contrast on the canonical steel benchmark ($d\\ge276$ mm, $n=303$): the learned tree model has much larger COV than size-aware mechanical models in the same large-member subset.",
+            "tab:s2b",
+            colfmt="llrrrr",
+            fmt=3,
+        )
+    )
+
 L.append(
     table(
         pd.read_csv(PROC / "steel_uq_matrix.csv"),
@@ -216,6 +234,7 @@ if (PROC / "fe_mesh_objectivity.json").exists():
 protocol = pd.DataFrame(
     [
         ["Steel UQ matrix", "a16_steel_extrapolation.py", "0.70, 0.75, 0.80", "0, 1, 2", "steel_uq_matrix_raw.csv; steel_uq_matrix.csv"],
+        ["Steel OOE model uncertainty", "a16_steel_extrapolation.py", "0.75 boundary", "spot-check summary", "steel_ooe_model_uncertainty_summary.csv"],
         ["FRP/deep-beam UQ matrix", "a07_corrected_uq_matrix.py", "0.70, 0.75, 0.80", "0, 1", "a07_uq_matrix_raw.csv"],
         ["SFRC replication", "a09_sfrc_extrap.py", "0.70, 0.75, 0.80", "0, 1, 2", "sfrc_uq_matrix.csv"],
         ["Deep UQ", "a17_gpu_uq.py", "0.70, 0.75, 0.80", "split seed 0; ensemble seeds 0--4", "steel_gpu_uq_raw.csv"],
