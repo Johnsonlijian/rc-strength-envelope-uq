@@ -19,7 +19,7 @@ keywords:
 license: "MIT"
 preferred-citation:
   type: article
-  title: "Machine-learned reinforced-concrete strength predictions fail beyond the training envelope: size-extrapolation hazards and a bounded mechanical fallback"
+  title: "Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and a bounded mechanical fallback"
   authors:
     - family-names: "REN"
       given-names: "Lijian"

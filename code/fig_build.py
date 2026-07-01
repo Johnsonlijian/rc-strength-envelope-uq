@@ -1,7 +1,7 @@
 """
 fig_build.py — publication figures (real data) for the out-of-envelope paper.
 Outputs SVG+PDF+PNG to ../figures/.
- Fig 1  concept (hero) + real data: the training-envelope cliff
+ Fig 1  integrated overview: CV cliff, mechanism, reliability, fallback rule
  Fig 2  no UQ method restores extrapolation coverage (FRP + steel)
  Fig 3  model error vs size: ML cliffs, mechanical model stays safe
  Fig 4  the remedy: applicability-domain gate + mechanical fallback
@@ -65,53 +65,126 @@ def frp_split_fit(df, seed=0):
     return d_hi,pool,big,vpool,vbig,q
 
 
-# ---------------- Figure 1 : hero ----------------
+# ---------------- Figure 1 : integrated overview ----------------
 def fig1():
-    df=load_frp(); d_hi,pool,big,vpool,vbig,q=frp_split_fit(df)
-    fig=plt.figure(figsize=(7.2,2.5))
-    gs=fig.add_gridspec(1,3,width_ratios=[1.15,1,0.7],wspace=0.42)
+    fig=plt.figure(figsize=(7.60,5.35))
+    gs=fig.add_gridspec(2,2,wspace=0.36,hspace=0.48)
 
-    # (A) concept schematic
-    ax=fig.add_subplot(gs[0,0]); ax.axis("off"); ax.set_xlim(0,10); ax.set_ylim(0,10)
-    ax.add_patch(FancyBboxPatch((0.4,2.4),4.2,5.8,boxstyle="round,pad=0.08",fc="#eaf2fb",ec=C_IN,lw=1.2))
-    ax.add_patch(FancyBboxPatch((5.1,2.4),4.5,5.8,boxstyle="round,pad=0.08",fc="#fdeceb",ec=C_OUT,lw=1.2))
-    ax.text(2.5,8.9,"training envelope",color=C_IN,ha="center",fontsize=7.3,style="italic")
-    ax.text(7.35,8.9,"out-of-envelope",color=C_OUT,ha="center",fontsize=7.3,style="italic")
-    ax.text(2.5,6.2,"ML accurate\n90% interval\nvalid",color=C_IN,ha="center",va="center",fontsize=7)
-    ax.text(7.35,6.6,"ML interval\nunder-covers\n(no warning)",color=C_OUT,ha="center",va="center",fontsize=7)
-    ax.annotate("",xy=(9.35,3.7),xytext=(6.05,3.7),arrowprops=dict(arrowstyle="->",color=C_MECH,lw=1.5))
-    ax.text(7.55,3.05,"mechanical\nfallback (safe)",color=C_MECH,ha="center",va="center",fontsize=6.8)
-    ax.text(5.0,1.35,"increasing member size  $d\\;\\rightarrow$",ha="center",fontsize=7.3)
-    ax.annotate("",xy=(9.4,0.75),xytext=(0.6,0.75),arrowprops=dict(arrowstyle="->",color="k",lw=1.0))
-    ax.text(-0.1,9.6,"A",fontweight="bold",fontsize=11)
+    def panel_label(ax, s):
+        ax.text(-0.08,1.05,s,transform=ax.transAxes,fontweight="bold",fontsize=11,va="bottom")
 
-    # (B) predicted vs measured, colored by envelope, with interval band on a few large pts
-    ax=fig.add_subplot(gs[0,1])
-    ax.scatter(vpool,pool.V_test_kN,s=10,c=C_IN,alpha=0.6,label="in-envelope",edgecolors="none")
-    ax.errorbar(vbig,big.V_test_kN,xerr=q,fmt="o",ms=4,c=C_OUT,alpha=0.8,elinewidth=0.6,
-                capsize=0,label=r"out-of-envelope ($\pm\hat q$)")
-    lim=[0,max(df.V_test_kN.max(),vbig.max())*1.05]
-    ax.plot(lim,lim,"k--",lw=0.8); ax.set_xlim(lim); ax.set_ylim(lim)
-    ax.set_xlabel("ML predicted $V$ (kN)"); ax.set_ylabel("measured $V_{\\rm test}$ (kN)")
-    ax.legend(loc="upper left",frameon=False); ax.text(-0.28,1.02,"B",transform=ax.transAxes,fontweight="bold",fontsize=11)
+    def box(ax, xy, wh, text, fc, ec, fontsize=7.5, weight="normal"):
+        x,y=xy; w,h=wh
+        ax.add_patch(FancyBboxPatch((x,y),w,h,boxstyle="round,pad=0.025,rounding_size=0.035",
+                                    fc=fc,ec=ec,lw=1.0,transform=ax.transAxes,clip_on=False))
+        ax.text(x+w/2,y+h/2,text,ha="center",va="center",fontsize=fontsize,
+                fontweight=weight,transform=ax.transAxes)
 
-    # (C) coverage in vs out
-    ax=fig.add_subplot(gs[0,2])
-    cov_in=coverage(pool.V_test_kN.values-vpool,q); cov_out=coverage(big.V_test_kN.values-vbig,q)
-    ax.bar([0,1],[cov_in,cov_out],color=[C_IN,C_OUT],width=0.62)
-    ax.axhline(0.9,ls="--",c="k",lw=0.8); ax.text(1.5,0.91,"target\n0.90",fontsize=6.5,va="bottom",ha="right")
-    ax.set_xticks([0,1]); ax.set_xticklabels(["in-\nenv.","out-of-\nenv."]); ax.set_ylim(0,1.0)
-    ax.set_ylabel("interval coverage")
-    for x,v in zip([0,1],[cov_in,cov_out]): ax.text(x,v+0.02,f"{v:.2f}",ha="center",fontsize=7.5)
-    ax.text(-0.42,1.02,"C",transform=ax.transAxes,fontweight="bold",fontsize=11)
+    def arrow(ax, xy1, xy2, color="0.25", lw=1.0):
+        ax.annotate("",xy=xy2,xycoords=ax.transAxes,xytext=xy1,textcoords=ax.transAxes,
+                    arrowprops=dict(arrowstyle="->",lw=lw,color=color,shrinkA=2,shrinkB=2))
+
+    # A: validation mismatch
+    ax=fig.add_subplot(gs[0,0]); ax.axis("off"); panel_label(ax,"A")
+    ax.set_title("Validation mismatch",fontsize=9,pad=4)
+    box(ax,(0.03,0.58),(0.38,0.28),"Random CV\nexchangeable\ninterpolation", "#eef3f7", C_ACC, 7.2)
+    box(ax,(0.59,0.58),(0.38,0.28),"Engineering use\nlarge member\nextrapolation", "#fdeceb", C_OUT, 7.2)
+    arrow(ax,(0.42,0.72),(0.58,0.72),C_OUT,1.3)
+    ax.text(0.50,0.84,"not the same\nvalidity claim",ha="center",va="center",fontsize=6.7,
+            color=C_OUT,transform=ax.transAxes)
+    y=0.25
+    for x0,h,c in [(0.10,0.11,C_IN),(0.20,0.17,C_IN),(0.30,0.22,C_IN),(0.73,0.31,C_OUT)]:
+        ax.add_patch(plt.Rectangle((x0,y),0.055,h,fc=c,ec=c,alpha=0.85,transform=ax.transAxes))
+        ax.plot([x0-0.008,x0+0.063],[y+h,y+h],c=c,lw=1.0,transform=ax.transAxes)
+    ax.plot([0.04,0.96],[y,y],c="0.25",lw=0.8,transform=ax.transAxes)
+    ax.text(0.50,0.10,"effective depth $d$  $\\longrightarrow$",ha="center",fontsize=7.4,transform=ax.transAxes)
+    ax.text(0.20,0.50,"training envelope",ha="center",fontsize=7,color=C_IN,transform=ax.transAxes)
+    ax.text(0.76,0.50,"out-of-envelope",ha="center",fontsize=7,color=C_OUT,transform=ax.transAxes)
+
+    # B: quantitative cliff from saved UQ matrices
+    ax=fig.add_subplot(gs[0,1]); panel_label(ax,"B")
+    Rf=pd.read_csv(PROC/"a07_uq_matrix_raw.csv")
+    Rs=pd.read_csv(PROC/"steel_uq_matrix_raw.csv")
+    rows=[]
+    for ds,R in [("FRP",Rf[Rf.ds=="FRP"]),("Steel",Rs)]:
+        sub=R[R.uq=="split"]
+        rows.append((ds,sub.interp.mean(),sub.interp.std(),sub.extrap.mean(),sub.extrap.std()))
+    centers=np.arange(len(rows)); width=0.32
+    interp=[r[1] for r in rows]; interp_sd=[r[2] for r in rows]
+    extrap=[r[3] for r in rows]; extrap_sd=[r[4] for r in rows]
+    ax.bar(centers-width/2,interp,width,color=C_ACC,label="interpolation",
+           yerr=interp_sd,capsize=2,error_kw=dict(lw=0.7,capthick=0.7))
+    ax.bar(centers+width/2,extrap,width,color=C_OUT,label="size extrapolation",
+           yerr=extrap_sd,capsize=2,error_kw=dict(lw=0.7,capthick=0.7))
+    ax.axhline(0.90,ls="--",c="k",lw=0.8)
+    ax.text(1.48,0.915,"target 0.90",fontsize=6.8,ha="right")
+    ax.set_ylim(0,1.02); ax.set_ylabel("split-conformal coverage")
+    ax.set_xticks(centers); ax.set_xticklabels([r[0] for r in rows])
+    ax.set_title("The interval cliff",fontsize=9,pad=4)
+    for x,v in zip(centers+width/2,extrap):
+        ax.text(x,v+0.035,f"{v:.2f}",ha="center",fontsize=7,color=C_OUT)
+    ax.legend(frameon=False,loc="lower center",bbox_to_anchor=(0.5,-0.24),
+              ncol=2,fontsize=6.8,handlelength=1.2,columnspacing=1.2)
+
+    # C: mechanism slope contrast
+    ax=fig.add_subplot(gs[1,0]); panel_label(ax,"C")
+    d=np.array([100,200,400,800,1400],float)
+    y_phys=(d/100)**(-0.32)
+    y_tree=(d/100)**(-1.00)
+    ax.plot(d,y_phys,"-o",c=C_MECH,lw=1.8,ms=4,label="mechanics $m\\approx-0.3$")
+    ax.plot(d,y_tree,"-o",c=C_OUT,lw=1.8,ms=4,label="tree artefact $m\\approx-1.0$")
+    ax.set_xscale("log"); ax.set_yscale("log")
+    ax.set_xlabel("effective depth $d$ (mm)")
+    ax.set_ylabel("normalised nominal shear")
+    ax.set_title("Missing size-effect physics",fontsize=9,pad=4)
+    ax.legend(frameon=False,fontsize=7,loc="lower left")
+    ax.text(145,0.55,"fracture-energy\nsize effect",color=C_MECH,fontsize=7)
+    ax.text(520,0.045,"prediction caps\n$\\Rightarrow\\tau\\sim1/d$",color=C_OUT,fontsize=7)
+    ax.set_ylim(0.04,1.2)
+
+    # D: reliability consequence and rule
+    ax=fig.add_subplot(gs[1,1]); ax.axis("off"); panel_label(ax,"D")
+    ax.set_title("Reliability consequence and bounded rule",fontsize=9,pad=4)
+    inset=ax.inset_axes([0.02,0.18,0.45,0.70])
+    rel=pd.read_csv(PROC/"steel_reliability.csv")
+    inset.plot(rel.d_mid,rel.beta_ml,"o-",c=C_OUT,lw=1.4,ms=3.8,label="learned")
+    inset.plot(rel.d_mid,rel.beta_me,"s-",c=C_MECH,lw=1.4,ms=3.8,label="MCFT")
+    inset.axhline(3.8,ls="--",c="k",lw=0.8)
+    inset.text(rel.d_mid.max(),3.86,"$\\beta_T$",fontsize=6.5,ha="right",va="bottom")
+    inset.set_xlabel("$d$ bin midpoint (mm)",fontsize=7)
+    inset.set_ylabel("realised $\\beta$",fontsize=7)
+    inset.tick_params(labelsize=6.5)
+    inset.set_ylim(1.4,4.7)
+    inset.legend(frameon=False,fontsize=6.3,loc="lower left")
+    x0=0.56
+    box(ax,(x0,0.67),(0.34,0.17),"new member\n$x$", "#f7f7f7", "0.45", 7.1)
+    box(ax,(x0,0.43),(0.34,0.16),"inside trained\nfeature envelope?", "#eef3f7", C_IN, 7.0)
+    box(ax,(x0-0.08,0.16),(0.22,0.17),"yes:\nML interval\nwith caveat", "#eef3f7", C_IN, 6.6)
+    box(ax,(x0+0.21,0.16),(0.25,0.17),"no:\nvalidated\nmechanical model\nfor regime", "#eaf6ef", C_MECH, 6.2)
+    arrow(ax,(x0+0.17,0.67),(x0+0.17,0.59),"0.25",1.0)
+    arrow(ax,(x0+0.10,0.43),(x0+0.04,0.33),C_IN,1.0)
+    arrow(ax,(x0+0.24,0.43),(x0+0.35,0.33),C_MECH,1.0)
+
+    fig.suptitle("Cross-validation certifies interpolation; structural safety needs envelope-aware uncertainty",
+                 fontsize=9.8,y=0.995)
+    fig.subplots_adjust(top=0.91,left=0.125,right=0.98,bottom=0.095)
     save_all(fig, "fig1_envelope_cliff"); plt.close(fig)
-    print("fig1 done", f"(cov in={cov_in:.2f} out={cov_out:.2f})")
+    print("fig1 done (integrated overview)")
 
 
 # ---------------- Figure 2 : UQ-method matrix ----------------
 def fig2():
-    R=pd.read_csv(PROC/"a07_uq_matrix_raw.csv")
-    g=R.groupby(["ds","model","uq"]).agg(interp=("interp","mean"),extrap=("extrap","mean")).reset_index()
+    R_families=pd.read_csv(PROC/"a07_uq_matrix_raw.csv")
+    R_frp=R_families[R_families.ds=="FRP"].copy()
+    R_steel=pd.read_csv(PROC/"steel_uq_matrix_raw.csv").copy()
+    R_steel["ds"]="STEEL"
+    R=pd.concat([R_frp,R_steel],ignore_index=True)
+    g=R.groupby(["ds","model","uq"]).agg(
+        interp=("interp","mean"),
+        extrap=("extrap","mean"),
+        interp_sd=("interp","std"),
+        extrap_sd=("extrap","std"),
+    ).reset_index()
     uqn={"split":"split-conf.","knn-norm":"adaptive","native90":"native"}
     order=["HistGB|split","HistGB|knn-norm","RF|split","RF|knn-norm","Linear|split","Linear|knn-norm","GP|native90","QuantGBM|native90"]
     fig,axes=plt.subplots(1,2,figsize=(7.4,3.35),sharey=True)
@@ -120,12 +193,15 @@ def fig2():
         sub=sub.set_index("key").reindex(order).reset_index()
         labels=[f"{k.split('|')[0]}\n{uqn[k.split('|')[1]]}" for k in sub.key]
         x=np.arange(len(sub))
-        ax.bar(x-0.19,sub.interp,width=0.36,color=C_ACC,label="interpolation (CV)")
-        ax.bar(x+0.19,sub.extrap,width=0.36,color=C_OUT,label="size-extrapolation")
+        ax.bar(x-0.19,sub.interp,width=0.36,color=C_ACC,label="interpolation (CV)",
+               yerr=sub.interp_sd.fillna(0),capsize=2,error_kw=dict(lw=0.7,capthick=0.7))
+        ax.bar(x+0.19,sub.extrap,width=0.36,color=C_OUT,label="size-extrapolation",
+               yerr=sub.extrap_sd.fillna(0),capsize=2,error_kw=dict(lw=0.7,capthick=0.7))
         ax.axhline(0.9,ls="--",c="k",lw=0.8)
         if ds=="STEEL": ax.text(7.6,0.915,"0.90",fontsize=6.5,ha="right",color="k")
         ax.set_xticks(x); ax.set_xticklabels(labels,fontsize=6.4,rotation=40,ha="right")
-        ax.set_title(f"{ds} beams"); ax.set_ylim(0,1.02)
+        ax.set_title("Canonical steel beams" if ds=="STEEL" else "FRP beams")
+        ax.set_ylim(0,1.02)
         if ds=="FRP":
             ax.set_ylabel("90% interval coverage")
     handles, legend_labels = axes[0].get_legend_handles_labels()

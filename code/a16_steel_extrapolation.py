@@ -21,6 +21,7 @@ def main():
     print(f"== canonical steel benchmark (Zhang 1704), slender n={len(sl)}, d {sl.d.min():.0f}-{sl.d.max():.0f}mm ==")
 
     R = run_dataset("STEEL", sl, FEATS, "Vu_kN", thresholds=(0.70,0.75,0.80), seeds=(0,1,2))
+    R.to_csv(PROC/"steel_uq_matrix_raw.csv", index=False)
     g = R.groupby(["model","uq"]).agg(interp=("interp","mean"), extrap=("extrap","mean")).round(3)
     print("\nML size-extrapolation coverage (target 0.90):")
     print(g.to_string())
@@ -43,7 +44,7 @@ def main():
         M = big.Vu_kN.values*1e3/Vp
         print(f"  {name:10s} bias={M.mean():.2f}  COV={M.std()/M.mean():.2f}  %unsafe={100*np.mean(M<1):.0f}%")
     g.to_csv(PROC/"steel_uq_matrix.csv")
-    print("\nsaved -> steel_uq_matrix.csv")
+    print("\nsaved -> steel_uq_matrix_raw.csv and steel_uq_matrix.csv")
 
 
 if __name__ == "__main__":
