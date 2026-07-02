@@ -11,7 +11,8 @@ PROC = Path("../data/processed")
 OUT = Path("../outputs")
 TITLE = (
     "Machine-learned reinforced-concrete strength intervals fail beyond the "
-    "training envelope: size-extrapolation hazards and a range-bounded mechanical fallback"
+    "training envelope: size-extrapolation hazards and an envelope-gated "
+    "mechanical fallback that restores target reliability"
 )
 
 
@@ -36,11 +37,14 @@ def tex_tabular(df, colfmt=None, fmt=2):
     return f"\\begin{{tabular}}{{{cols}}}\n\\toprule\n{head}\n{body}\n\\bottomrule\n\\end{{tabular}}"
 
 
-def table(df, cap, lab, **kw):
+def table(df, cap, lab, wide=False, size="small", **kw):
+    body = tex_tabular(df, **kw)
+    if wide:
+        body = "\\resizebox{\\textwidth}{!}{%\n" + body + "\n}"
     return (
-        "\\begin{table}[h]\\centering\\small\n"
+        f"\\begin{{table}}[h]\\centering\\{size}\n"
         f"\\caption{{{cap}}}\\label{{{lab}}}\n"
-        f"{tex_tabular(df, **kw)}\n"
+        f"{body}\n"
         "\\end{table}\n"
     )
 
@@ -73,11 +77,12 @@ def maybe_column_mech_summary():
 
 L = [
     rf"""\documentclass[11pt]{{article}}
-\usepackage[margin=1in]{{geometry}}\usepackage{{booktabs,array,amsmath}}
+\usepackage[margin=1in]{{geometry}}\usepackage{{booktabs,array,amsmath,graphicx}}
 \title{{Supplementary Information\\\large {TITLE}}}
 \author{{Lijian REN\\School of Civil Engineering, Inner Mongolia University of Technology,\\Hohhot 010051, China\\Inner Mongolia Autonomous Region Key Laboratory of Green Construction and\\Intelligent Operation and Maintenance of Civil Engineering,\\Hohhot 010051, China\\College of Civil and Transportation Engineering, Hohai University,\\Nanjing 210098, China\\\texttt{{renlijian@imut.edu.cn}}\\\texttt{{https://orcid.org/0000-0003-1629-4368}}}}\date{{}}
+\renewcommand{{\thetable}}{{S\arabic{{table}}}}
 \begin{{document}}\maketitle
-\noindent All tables are emitted directly from saved analysis outputs by \texttt{{code/generate\_SI\_tex.py}}. The protocol table at the end lists the script, threshold grid, seed grid, and saved artifact used by each analysis family.
+\noindent All tables are emitted directly from saved analysis outputs by \texttt{{code/generate\_SI\_tex.py}} and are numbered S1--S16 in the order cited in the main text. The protocol table at the end lists the script, threshold grid, seed grid, and saved artifact used by each analysis family.
 """
 ]
 
@@ -231,6 +236,141 @@ if (PROC / "fe_mesh_objectivity.json").exists():
     )
     L.append(table(mesh_df, "Mesh-objectivity check for the crack-band FE model under $2\\times$ refinement.", "tab:s10", fmt=3))
 
+# ---- S12: same-pipeline same-metric closure (learned vs mechanical intervals)
+clo = pd.concat(
+    [pd.read_csv(PROC / "steel_closure_raw.csv"), pd.read_csv(PROC / "frp_closure.csv")],
+    ignore_index=True,
+)
+clo_g = (
+    clo.groupby(["ds", "predictor"])
+    .agg(
+        ind=("cov_ln_ind", "mean"),
+        big=("cov_ln_big", "mean"),
+        big_sd=("cov_ln_big", "std"),
+        big_raw=("cov_raw_big", "mean"),
+        ooe_cov=("ooe_cov", "mean"),
+        width=("width_factor_ln", "mean"),
+    )
+    .reset_index()
+)
+clo_g["OOE cov. (ln)"] = clo_g.apply(lambda r: f"{r.big:.3f} ({r.big_sd:.3f})", axis=1)
+clo_g = clo_g.rename(
+    columns={
+        "ds": "database",
+        "predictor": "predictor",
+        "ind": "in-env cov. (ln)",
+        "big_raw": "OOE cov. (raw)",
+        "ooe_cov": "OOE COV of M",
+        "width": "width factor",
+    }
+)
+clo_g = clo_g[
+    ["database", "predictor", "in-env cov. (ln)", "OOE cov. (ln)", "OOE cov. (raw)", "OOE COV of M", "width factor"]
+]
+L.append(
+    table(
+        clo_g,
+        "Same-pipeline, same-metric interval test: every predictor (learned and mechanical) is bias-corrected on the in-envelope calibration split, equipped with a split-conformal interval calibrated on that same split (multiplicative ln-space form; the raw-space constant-width form is also shown), and evaluated on the held-out large members. Means over thresholds $\\{0.70,0.75,0.80\\}$ and seeds $\\{0,1,2\\}$; parentheses give one standard deviation across split settings. The width factor is the in-envelope ratio of interval upper to lower bound; the OOE COV is that of $M=V_{\\mathrm{test}}/V_{\\mathrm{pred}}$ after calibration bias-correction.",
+        "tab:s12",
+        colfmt="llrrrrr",
+        fmt=3,
+        wide=True,
+    )
+)
+
+# ---- S13: protocol-level realised reliability
+pb = pd.read_csv(PROC / "protocol_beta.csv")
+pb_t = pb[["d_lo", "d_hi", "n", "n_routed", "beta_ml", "beta_mcft", "beta_a19", "beta_protocol", "beta_protocol_a19"]].copy()
+pb_t.insert(0, "d bin (mm)", pb_t.apply(lambda r: f"{int(r.d_lo)}--{int(r.d_hi)}", axis=1))
+pb_t = pb_t.drop(columns=["d_lo", "d_hi"]).rename(
+    columns={
+        "n_routed": "n routed",
+        "beta_ml": "beta ML",
+        "beta_mcft": "beta MCFT",
+        "beta_a19": "beta ACI318-19",
+        "beta_protocol": "beta protocol (MCFT)",
+        "beta_protocol_a19": "beta protocol (318-19)",
+    }
+)
+L.append(
+    table(
+        pb_t,
+        "Realised reliability of the envelope-gated protocol on the canonical steel benchmark (target $\\beta_T=3.8$; same load model, calibration split, and Monte-Carlo settings as Table~\\ref{tab:s7}). Members inside the trained size range keep the learned model; members beyond it are routed to the mechanical fallback; the protocol failure probability mixes the two member-wise.",
+        "tab:s13",
+        fmt=2,
+        wide=True,
+    )
+)
+
+# ---- S14: physics-anchored arms
+pa = pd.read_csv(PROC / "physics_arms.csv")
+pa_g = (
+    pa.groupby(["ds", "arm", "model"])
+    .agg(
+        cov_ind=("cov_ind", "mean"),
+        cov_big=("cov_big", "mean"),
+        ooe_cov=("ooe_cov", "mean"),
+        width=("width_factor", "mean"),
+    )
+    .round(3)
+    .reset_index()
+    .rename(
+        columns={
+            "ds": "database",
+            "cov_ind": "in-env cov.",
+            "cov_big": "OOE cov.",
+            "ooe_cov": "OOE COV of M",
+            "width": "width factor",
+        }
+    )
+)
+L.append(
+    table(
+        pa_g,
+        "Physics-anchored learners under the identical size-extrapolation protocol. residual-target: the learner fits the ln model error of the mechanical anchor, so the anchor carries the extrapolation; physics-feature: the anchor prediction is appended as an input feature but the target remains $\\ln V_{\\mathrm{test}}$. Anchors: MCFT (steel), ACI 440.1R-15 (FRP).",
+        "tab:s14",
+        colfmt="lllrrrr",
+        fmt=3,
+        wide=True,
+    )
+)
+
+# ---- S15: estimated-ratio weighted conformal
+wc = pd.read_csv(PROC / "weighted_conformal.csv")
+wc_g = (
+    wc.groupby("ds")
+    .agg(
+        frac_inf=("frac_infinite", "mean"),
+        cov_inf=("cov_counting_inf", "mean"),
+        cov_fin=("cov_finite_only", "mean"),
+        w_fin=("med_width_factor_finite", "mean"),
+        w_unw=("unweighted_width_factor", "mean"),
+    )
+    .round(3)
+    .reset_index()
+    .rename(
+        columns={
+            "ds": "database",
+            "frac_inf": "fraction infinite",
+            "cov_inf": "cov. (inf counted)",
+            "cov_fin": "cov. finite-only",
+            "w_fin": "med. width factor (finite)",
+            "w_unw": "unweighted width factor",
+        }
+    )
+)
+for c in ["cov. finite-only", "med. width factor (finite)"]:
+    wc_g[c] = wc_g[c].map(lambda v: "--" if pd.isna(v) else f"{v:.3f}")
+L.append(
+    table(
+        wc_g,
+        "Estimated-likelihood-ratio weighted split conformal (logistic classifier between the training pool and the deployment covariates, weights clipped to $[10^{-3},10^{3}]$), evaluated on the held-out large members. An infinite interval arises when the deployment point's weight mass exceeds the $1-\\alpha$ quantile reach of the calibration set: the method abstains rather than certifies.",
+        "tab:s15",
+        fmt=3,
+        wide=True,
+    )
+)
+
 protocol = pd.DataFrame(
     [
         ["Steel UQ matrix", "a16_steel_extrapolation.py", "0.70, 0.75, 0.80", "0, 1, 2", "steel_uq_matrix_raw.csv; steel_uq_matrix.csv"],
@@ -241,6 +381,8 @@ protocol = pd.DataFrame(
         ["Reliability consequence", "a21_steel_reliability.py", "0.75 calibration boundary", "split seed 0; MC seed fixed", "steel_reliability.csv"],
         ["Column dual-axis UQ", "a25_column_extrap.py", "size and axial-load holdout", "script fixed seeds", "column_extrap.csv"],
         ["Column mechanical aggregate", "a26_column_mech_validate.py", "axial-load bins", "deterministic", "column_mech_by_axial_bin.csv"],
+        ["Same-metric closure + protocol reliability", "a28_steel_closure.py", "0.70, 0.75, 0.80", "0, 1, 2; protocol split seed 0, MC fixed", "steel_closure_raw.csv; frp_closure.csv; protocol_beta.csv"],
+        ["Physics-anchored arms; weighted conformal", "a29_physics_arms.py", "0.70, 0.75, 0.80", "0, 1, 2", "physics_arms.csv; weighted_conformal.csv"],
     ],
     columns=["analysis", "script", "threshold grid", "seed grid", "saved artifact"],
 )
