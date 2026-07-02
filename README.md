@@ -2,7 +2,7 @@
 
 Code, derived result tables, and publication figures for the manuscript:
 
-**Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and a range-bounded mechanical fallback**
+**Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and an envelope-gated mechanical fallback that restores target reliability**
 
 Author: Lijian REN  
 ORCID: https://orcid.org/0000-0003-1629-4368  

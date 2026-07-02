@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this reproducibility package, please cite it and the associated manuscript."
 title: "RC Strength Envelope UQ: reproducibility package"
-version: "1.0.4"
-date-released: "2026-07-01"
+version: "1.0.5"
+date-released: "2026-07-02"
 authors:
   - family-names: "REN"
     given-names: "Lijian"
@@ -19,7 +19,7 @@ keywords:
 license: "MIT"
 preferred-citation:
   type: article
-  title: "Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and a range-bounded mechanical fallback"
+  title: "Machine-learned reinforced-concrete strength intervals fail beyond the training envelope: size-extrapolation hazards and an envelope-gated mechanical fallback that restores target reliability"
   authors:
     - family-names: "REN"
       given-names: "Lijian"
