@@ -237,10 +237,11 @@ if (PROC / "fe_mesh_objectivity.json").exists():
     L.append(table(mesh_df, "Mesh-objectivity check for the crack-band FE model under $2\\times$ refinement.", "tab:s10", fmt=3))
 
 # ---- S12: same-pipeline same-metric closure (learned vs mechanical intervals)
-clo = pd.concat(
-    [pd.read_csv(PROC / "steel_closure_raw.csv"), pd.read_csv(PROC / "frp_closure.csv")],
-    ignore_index=True,
-)
+clo_parts = [pd.read_csv(PROC / "steel_closure_raw.csv"), pd.read_csv(PROC / "frp_closure.csv")]
+for extra in ["sfrc_closure.csv", "deepbeam_closure.csv"]:
+    if (PROC / extra).exists():
+        clo_parts.append(pd.read_csv(PROC / extra))
+clo = pd.concat(clo_parts, ignore_index=True)
 clo_g = (
     clo.groupby(["ds", "predictor"])
     .agg(
@@ -304,6 +305,8 @@ L.append(
 
 # ---- S14: physics-anchored arms
 pa = pd.read_csv(PROC / "physics_arms.csv")
+if (PROC / "anchor_robustness.csv").exists():
+    pa = pd.concat([pa, pd.read_csv(PROC / "anchor_robustness.csv")], ignore_index=True)
 pa_g = (
     pa.groupby(["ds", "arm", "model"])
     .agg(
@@ -327,7 +330,7 @@ pa_g = (
 L.append(
     table(
         pa_g,
-        "Physics-anchored learners under the identical size-extrapolation protocol. residual-target: the learner fits the ln model error of the mechanical anchor, so the anchor carries the extrapolation; physics-feature: the anchor prediction is appended as an input feature but the target remains $\\ln V_{\\mathrm{test}}$. Anchors: MCFT (steel), ACI 440.1R-15 (FRP).",
+        "Physics-anchored learners under the identical size-extrapolation protocol. residual-target: the learner fits the ln model error of the mechanical anchor, so the anchor carries the extrapolation; physics-feature: the anchor prediction is appended as an input feature but the target remains $\\ln V_{\\mathrm{test}}$. Anchors: MCFT (steel), ACI 440.1R-15 (FRP); the STEEL-a19 rows repeat the residual-target arm with an ACI 318-19 anchor (anchor-robustness check).",
         "tab:s14",
         colfmt="lllrrrr",
         fmt=3,
@@ -383,6 +386,9 @@ protocol = pd.DataFrame(
         ["Column mechanical aggregate", "a26_column_mech_validate.py", "axial-load bins", "deterministic", "column_mech_by_axial_bin.csv"],
         ["Same-metric closure + protocol reliability", "a28_steel_closure.py", "0.70, 0.75, 0.80", "0, 1, 2; protocol split seed 0, MC fixed", "steel_closure_raw.csv; frp_closure.csv; protocol_beta.csv"],
         ["Physics-anchored arms; weighted conformal", "a29_physics_arms.py", "0.70, 0.75, 0.80", "0, 1, 2", "physics_arms.csv; weighted_conformal.csv"],
+        ["SFRC closure (Narayanan-Darwish)", "a31_sfrc_closure.py", "0.70, 0.75, 0.80", "0, 1, 2", "sfrc_closure.csv"],
+        ["Deep-beam closure (ACI 318-19 STM)", "a32_deepbeam_stm.py", "0.70, 0.75, 0.80", "0, 1, 2", "deepbeam_closure.csv"],
+        ["Anchor robustness (residual-target, ACI 318-19)", "a33_anchor_robustness.py", "0.70, 0.75, 0.80", "0, 1, 2", "anchor_robustness.csv"],
     ],
     columns=["analysis", "script", "threshold grid", "seed grid", "saved artifact"],
 )

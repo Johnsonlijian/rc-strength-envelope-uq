@@ -147,26 +147,27 @@ def fig1():
     ax.text(840,0.052,"prediction caps\n$\\tau\\propto1/d$",color=C_OUT,fontsize=6.8,ha="center")
     ax.set_xlim(80,1700); ax.set_ylim(0.04,1.25)
 
-    # D: reliability consequence and rule
+    # D: reliability consequence and the gated-protocol restoration
     ax=fig.add_subplot(gs[1,1]); panel_label(ax,"D")
     clean_axes(ax)
-    ax.set_title("Reliability drops below target",fontsize=9,pad=6)
+    ax.set_title("Gate + fallback restores target reliability",fontsize=9,pad=6)
     rel=pd.read_csv(PROC/"steel_reliability.csv")
+    proto=pd.read_csv(PROC/"protocol_beta.csv")
     ax.axhspan(1.35,3.8,fc=C_OUT,alpha=0.07,zorder=0)
     ax.plot(rel.d_mid,rel.beta_ml,"o-",c=C_OUT,lw=1.7,ms=4.2)
-    ax.plot(rel.d_mid,rel.beta_me,"s-",c=C_MECH,lw=1.7,ms=4.2)
+    ax.plot(proto.d_mid,proto.beta_protocol,"D-",c="#1a1a1a",lw=2.1,ms=4.4,zorder=5)
     ax.axhline(3.8,ls="--",c="k",lw=0.8)
-    ax.text(910,3.87,"target $\\beta_T=3.8$",fontsize=6.9,ha="right",va="bottom")
+    ax.text(910,3.62,"target $\\beta_T=3.8$",fontsize=6.9,ha="right",va="top")
     ax.text(565,2.03,"learned interval",color=C_OUT,fontsize=7.2,
             bbox=dict(fc="white",ec="none",alpha=0.85,pad=1.5))
-    ax.text(560,4.42,"validated mechanics",color=C_MECH,fontsize=7.2,
+    ax.text(430,4.62,"envelope-gated protocol",color="#1a1a1a",fontsize=7.2,
             bbox=dict(fc="white",ec="none",alpha=0.85,pad=1.5))
     ax.annotate("$\\beta\\approx1.8$",xy=(525,1.82),xytext=(380,1.54),
                 color=C_OUT,fontsize=7.2,
                 arrowprops=dict(arrowstyle="->",lw=0.8,color=C_OUT))
     ax.set_xlabel("$d$ bin midpoint (mm)")
     ax.set_ylabel("realised reliability index $\\beta$")
-    ax.set_ylim(1.35,4.75); ax.set_xlim(40,940)
+    ax.set_ylim(1.35,4.95); ax.set_xlim(40,940)
 
     fig.suptitle("Random cross-validation is an interpolation certificate, not a deployment-safety certificate",
                  fontsize=10.0,y=0.992)
